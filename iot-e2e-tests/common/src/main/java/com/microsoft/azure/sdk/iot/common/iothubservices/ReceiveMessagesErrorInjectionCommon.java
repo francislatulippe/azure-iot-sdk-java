@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.sdk.iot.common.iothubservices;
 
+import com.microsoft.azure.sdk.iot.common.DeviceConnectionString;
 import com.microsoft.azure.sdk.iot.common.ErrorInjectionHelper;
 import com.microsoft.azure.sdk.iot.common.EventCallback;
 import com.microsoft.azure.sdk.iot.common.Success;
@@ -13,11 +14,12 @@ import com.microsoft.azure.sdk.iot.device.Message;
 import com.microsoft.azure.sdk.iot.device.exceptions.ModuleClientException;
 import com.microsoft.azure.sdk.iot.device.transport.IotHubConnectionStatus;
 import com.microsoft.azure.sdk.iot.service.*;
-import com.microsoft.azure.sdk.iot.service.Module;
 import com.microsoft.azure.sdk.iot.service.auth.AuthenticationType;
 import com.microsoft.azure.sdk.iot.service.exceptions.IotHubException;
-import org.junit.*;
-import com.microsoft.azure.sdk.iot.common.DeviceConnectionString;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -33,14 +35,14 @@ import static com.microsoft.azure.sdk.iot.service.auth.AuthenticationType.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class ReceiveMessagesCommon extends MethodNameLoggingIntegrationTest
+public class ReceiveMessagesErrorInjectionCommon extends MethodNameLoggingIntegrationTest
 {
     private static final long DEFAULT_TEST_TIMEOUT = 3 * 60 * 1000;
     public static Map<String, String> messageProperties = new HashMap<>(3);
 
     private final static String SET_MINIMUM_POLLING_INTERVAL = "SetMinimumPollingInterval";
     private final static Long ONE_SECOND_POLLING_INTERVAL = 1000L;
-    
+
     // variables used in E2E test for sending back to back messages using C2D sendAsync method
     private static final int MAX_COMMANDS_TO_SEND = 5; // maximum commands to be sent in a loop
     private static final List messageIdListStoredOnC2DSend = new ArrayList(); // store the message id list on sending C2D commands using service client
@@ -139,7 +141,7 @@ public class ReceiveMessagesCommon extends MethodNameLoggingIntegrationTest
         );
     }
 
-    public ReceiveMessagesCommon(InternalClient client, IotHubClientProtocol protocol, Device device, Module module, AuthenticationType authenticationType, String clientType)
+    public ReceiveMessagesErrorInjectionCommon(InternalClient client, IotHubClientProtocol protocol, Device device, Module module, AuthenticationType authenticationType, String clientType)
     {
         this.testInstance = new ReceiveMessagesITRunner(client, protocol, device, module, authenticationType, clientType);
     }
@@ -195,12 +197,218 @@ public class ReceiveMessagesCommon extends MethodNameLoggingIntegrationTest
     }
 
     @Test (timeout = DEFAULT_TEST_TIMEOUT)
-    public void receiveMessagesOverIncludingProperties() throws Exception
+    public void receiveMessagesWithTCPConnectionDrop() throws IOException, IotHubException, InterruptedException
     {
         if (testInstance.protocol == HTTPS)
         {
-            testInstance.client.setOption(SET_MINIMUM_POLLING_INTERVAL, ONE_SECOND_POLLING_INTERVAL);
+            //test case not applicable
+            return;
         }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.tcpConnectionDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsConnectionDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsConnectionDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsSessionDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsSessionDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsCBSReqLinkDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        if (testInstance.authenticationType == SELF_SIGNED || testInstance.authenticationType == CERTIFICATE_AUTHORITY)
+        {
+            //cbs links aren't established in these scenarios, so it would be impossible/irrelevant if a cbs link dropped
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsCBSReqLinkDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsCBSRespLinkDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        if (testInstance.authenticationType == SELF_SIGNED || testInstance.authenticationType == CERTIFICATE_AUTHORITY)
+        {
+            //cbs links aren't established in these scenarios, so it would be impossible/irrelevant if a cbs link dropped
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsCBSRespLinkDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsD2CLinkDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsD2CTelemetryLinkDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsC2DLinkDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        if (testInstance.authenticationType != SAS)
+        {
+            //TODO X509 case never seems to get callback about the connection dying. Needs investigation because this should pass, but doesn't
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsC2DLinkDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsMethodReqLinkDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
+        {
+            //TODO error injection seems to fail under these circumstances. Method Req link is never dropped even if waiting a long time
+            // Need to talk to service folks about this strange behavior
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsMethodReqLinkDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsMethodRespLinkDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
+        {
+            //TODO error injection seems to fail under these circumstances. Method Resp link is never dropped even if waiting a long time
+            // Need to talk to service folks about this strange behavior
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsMethodRespLinkDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsTwinReqLinkDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
+        {
+            //TODO error injection seems to fail under these circumstances. Twin Req link is never dropped even if waiting a long time
+            // Need to talk to service folks about this strange behavior
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsTwinReqLinkDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithAmqpsTwinRespLinkDrop() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
+        {
+            //TODO error injection seems to fail under these circumstances. Twin Req link is never dropped even if waiting a long time
+            // Need to talk to service folks about this strange behavior
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsTwinRespLinkDropErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithGracefulShutdownAmqp() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != AMQPS && testInstance.protocol != AMQPS_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.amqpsGracefulShutdownErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    @Test (timeout = DEFAULT_TEST_TIMEOUT)
+    public void receiveMessagesWithGracefulShutdownMqtt() throws IOException, IotHubException, InterruptedException
+    {
+        if (testInstance.protocol != MQTT && testInstance.protocol != MQTT_WS)
+        {
+            //test case not applicable
+            return;
+        }
+
+        this.errorInjectionTestFlow(ErrorInjectionHelper.mqttGracefulShutdownErrorInjectionMessage(DefaultDelayInSec, DefaultDurationInSec));
+    }
+
+    private void errorInjectionTestFlow(Message errorInjectionMessage) throws IOException, IotHubException, InterruptedException
+    {
+        final ArrayList<IotHubConnectionStatus> connectionStatusUpdates = new ArrayList<>();
+        testInstance.client.registerConnectionStatusChangeCallback(new IotHubConnectionStatusChangeCallback()
+        {
+            @Override
+            public void execute(IotHubConnectionStatus status, IotHubConnectionStatusChangeReason statusChangeReason, Throwable throwable, Object callbackContext)
+            {
+                connectionStatusUpdates.add(status);
+            }
+        }, null);
 
         IotHubServicesCommon.openClientWithRetry(testInstance.client);
 
@@ -212,7 +420,6 @@ public class ReceiveMessagesCommon extends MethodNameLoggingIntegrationTest
         }
 
         Success messageReceived = new Success();
-
         if (testInstance.client instanceof DeviceClient)
         {
             ((DeviceClient) testInstance.client).setMessageCallback(callback, messageReceived);
@@ -221,6 +428,16 @@ public class ReceiveMessagesCommon extends MethodNameLoggingIntegrationTest
         {
             ((ModuleClient) testInstance.client).setMessageCallback(callback, messageReceived);
         }
+
+        //error injection message is not guaranteed to be ack'd by service so it may be re-sent. By setting expiry time,
+        // we ensure that error injection message isn't resent to service too many times. The message will still likely
+        // be sent 3 or 4 times causing 3 or 4 disconnections, but the test should recover anyways.
+        errorInjectionMessage.setExpiryTime(200);
+        testInstance.client.sendEventAsync(errorInjectionMessage, new EventCallback(null), null);
+
+        //wait to send the message because we want to ensure that the tcp connection drop happens beforehand and we
+        // want the connection to be re-established before sending anything from service client
+        IotHubServicesCommon.waitForStabilizedConnection(connectionStatusUpdates, ERROR_INJECTION_RECOVERY_TIMEOUT);
 
         if (testInstance.client instanceof DeviceClient)
         {
@@ -235,77 +452,8 @@ public class ReceiveMessagesCommon extends MethodNameLoggingIntegrationTest
 
         Thread.sleep(200);
         testInstance.client.closeNow();
-    }
 
-    @Test
-    public void receiveBackToBackUniqueC2DCommandsOverAmqpsUsingSendAsync() throws Exception
-    {
-        if (this.testInstance.protocol != AMQPS)
-        {
-            //only want to test for AMQPS
-            return;
-        }
-
-        // This E2E test is for testing multiple C2D sends and make sure buffers are not getting overwritten
-        List<CompletableFuture<Void>> futureList = new ArrayList<>();
-
-        // set device to receive back to back different commands using AMQPS protocol
-        IotHubServicesCommon.openClientWithRetry(testInstance.client);
-
-        // set call back for device client for receiving message
-        com.microsoft.azure.sdk.iot.device.MessageCallback callBackOnRx = new MessageCallbackForBackToBackC2DMessages();
-
-        if (testInstance.client instanceof DeviceClient)
-        {
-            ((DeviceClient) testInstance.client).setMessageCallback(callBackOnRx, null);
-        }
-        else if (testInstance.client instanceof ModuleClient)
-        {
-            ((ModuleClient) testInstance.client).setMessageCallback(callBackOnRx, null);
-        }
-
-        // send back to back unique commands from service client using sendAsync operation.
-        for (int i = 0; i < MAX_COMMANDS_TO_SEND; i++)
-        {
-            String messageString = Integer.toString(i);
-            com.microsoft.azure.sdk.iot.service.Message serviceMessage = new com.microsoft.azure.sdk.iot.service.Message(messageString);
-
-            // set message id
-            serviceMessage.setMessageId(Integer.toString(i));
-
-            // set expected list of messaged id's
-            messageIdListStoredOnC2DSend.add(Integer.toString(i));
-
-            // send the message. Service client uses AMQPS protocol
-            CompletableFuture<Void> future;
-            if (testInstance.client instanceof DeviceClient)
-            {
-                future = serviceClient.sendAsync(testInstance.device.getDeviceId(), serviceMessage);
-                futureList.add(future);
-            }
-            else if (testInstance.client instanceof ModuleClient)
-            {
-                serviceClient.send(testInstance.device.getDeviceId(), testInstance.module.getId(), serviceMessage);
-            }
-        }
-
-        for (CompletableFuture<Void> future : futureList)
-        {
-            try
-            {
-                future.get();
-            }
-            catch (ExecutionException e)
-            {
-                Assert.fail("Exception : " + e.getMessage());
-            }
-        }
-
-        // Now wait for messages to be received in the device client
-        waitForBackToBackC2DMessagesToBeReceived();
-        testInstance.client.closeNow(); //close the device client connection
-        assertTrue(testInstance.protocol + ", " + testInstance.authenticationType + ": Received messages don't match up with sent messages", messageIdListStoredOnReceive.containsAll(messageIdListStoredOnC2DSend)); // check if the received list is same as the actual list that was created on sending the messages
-        messageIdListStoredOnReceive.clear();
+        assertTrue(testInstance.protocol + ", " + testInstance.authenticationType + ": Error Injection message did not cause service to drop TCP connection", connectionStatusUpdates.contains(IotHubConnectionStatus.DISCONNECTED_RETRYING));
     }
 
     private static class MessageCallbackForBackToBackC2DMessages implements com.microsoft.azure.sdk.iot.device.MessageCallback
@@ -322,7 +470,7 @@ public class ReceiveMessagesCommon extends MethodNameLoggingIntegrationTest
         public IotHubMessageResult execute(Message msg, Object context)
         {
             Boolean resultValue = true;
-            HashMap<String, String> messageProperties = (HashMap<String, String>) ReceiveMessagesCommon.messageProperties;
+            HashMap<String, String> messageProperties = (HashMap<String, String>) ReceiveMessagesErrorInjectionCommon.messageProperties;
             Success messageReceived = (Success)context;
             if (!hasExpectedProperties(msg, messageProperties) || !hasExpectedSystemProperties(msg))
             {
@@ -339,7 +487,7 @@ public class ReceiveMessagesCommon extends MethodNameLoggingIntegrationTest
     {
         public IotHubMessageResult execute(Message msg, Object context)
         {
-            HashMap<String, String> messageProperties = (HashMap<String, String>) ReceiveMessagesCommon.messageProperties;
+            HashMap<String, String> messageProperties = (HashMap<String, String>) ReceiveMessagesErrorInjectionCommon.messageProperties;
             Success messageReceived = (Success)context;
             if (hasExpectedProperties(msg, messageProperties) && hasExpectedSystemProperties(msg))
             {
