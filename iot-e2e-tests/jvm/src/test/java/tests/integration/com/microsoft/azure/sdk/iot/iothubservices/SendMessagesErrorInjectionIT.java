@@ -36,7 +36,7 @@ public class SendMessagesErrorInjectionIT extends SendMessagesErrorInjectionComm
         privateKey =  cert.getPrivateKeyLeafPem();
         publicKeyCert = cert.getPublicCertLeafPem();
         x509Thumbprint = cert.getThumbPrintLeaf();
-        return SendMessagesCommon.inputsCommon();
+        return SendMessagesErrorInjectionCommon.inputsCommon();
     }
 
     public SendMessagesErrorInjectionIT(InternalClient client, IotHubClientProtocol protocol, Device device, AuthenticationType authenticationType, String clientType)

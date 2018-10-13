@@ -31,7 +31,7 @@ public class DeviceTwinErrorInjectionIT extends DeviceTwinErrorInjectionCommon
         privateKey =  cert.getPrivateKeyLeafPem();
         publicKeyCert = cert.getPublicCertLeafPem();
         x509Thumbprint = cert.getThumbPrintLeaf();
-        return DeviceTwinCommon.inputsCommon();
+        return DeviceTwinErrorInjectionCommon.inputsCommon();
     }
 
     public DeviceTwinErrorInjectionIT(String deviceId, String moduleId, IotHubClientProtocol protocol, AuthenticationType authenticationType, String clientType)

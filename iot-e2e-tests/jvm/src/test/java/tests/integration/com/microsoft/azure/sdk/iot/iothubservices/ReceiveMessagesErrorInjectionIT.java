@@ -37,7 +37,7 @@ public class ReceiveMessagesErrorInjectionIT extends ReceiveMessagesErrorInjecti
         privateKey =  cert.getPrivateKeyLeafPem();
         publicKeyCert = cert.getPublicCertLeafPem();
         x509Thumbprint = cert.getThumbPrintLeaf();
-        return ReceiveMessagesCommon.inputsCommon();
+        return ReceiveMessagesErrorInjectionCommon.inputsCommon();
     }
 
     public ReceiveMessagesErrorInjectionIT(InternalClient client, IotHubClientProtocol protocol, Device device, Module module, AuthenticationType authenticationType, String clientType)

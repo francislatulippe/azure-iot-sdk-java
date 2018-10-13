@@ -18,6 +18,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipITs>true</skipITs>
+
+        <!--By default, no tests are skipped. Pass in test classes to the command line to populate this-->
+        <integrationTestsToSkip></integrationTestsToSkip>
     </properties>
     <dependencies>
         <dependency>
@@ -127,7 +130,7 @@
                     <!-- These tests are currently disabled due to a known issue on the service side 
                          where sometimes, scheduled jobs block indefinitely -->
                     <excludes>
-                    	<exclude>**/ExportImportIT.java</exclude>
+                    	<exclude>**/ExportImportIT.java, ${integrationTestsToSkip}</exclude>
                     </excludes>
                 </configuration>
             </plugin>

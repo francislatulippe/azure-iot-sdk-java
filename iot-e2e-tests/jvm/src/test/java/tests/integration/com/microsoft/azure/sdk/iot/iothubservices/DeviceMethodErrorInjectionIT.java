@@ -37,7 +37,7 @@ public class DeviceMethodErrorInjectionIT extends DeviceMethodErrorInjectionComm
         privateKey =  cert.getPrivateKeyLeafPem();
         publicKeyCert = cert.getPublicCertLeafPem();
         x509Thumbprint = cert.getThumbPrintLeaf();
-        return DeviceMethodCommon.inputsCommon();
+        return DeviceMethodErrorInjectionCommon.inputsCommon();
     }
 
     public DeviceMethodErrorInjectionIT(DeviceTestManager deviceTestManager, IotHubClientProtocol protocol, AuthenticationType authenticationType, String clientType, Device device, Module module)
