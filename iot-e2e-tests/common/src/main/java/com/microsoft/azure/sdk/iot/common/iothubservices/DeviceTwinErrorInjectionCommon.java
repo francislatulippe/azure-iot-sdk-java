@@ -40,62 +40,62 @@ import static org.junit.Assert.*;
 public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegrationTest
 {
     // Max time to wait to see it on Hub
-    private static final long PERIODIC_WAIT_TIME_FOR_VERIFICATION = 100; // 0.1 sec
-    private static final long MAX_WAIT_TIME_FOR_VERIFICATION = 60000; // 60 sec
-    private static final long DELAY_BETWEEN_OPERATIONS = 200; // 0.2 sec
+    protected static final long PERIODIC_WAIT_TIME_FOR_VERIFICATION = 100; // 0.1 sec
+    protected static final long MAX_WAIT_TIME_FOR_VERIFICATION = 60000; // 60 sec
+    protected static final long DELAY_BETWEEN_OPERATIONS = 200; // 0.2 sec
 
-    private static final long MAXIMUM_TIME_FOR_IOTHUB_PROPAGATION_BETWEEN_DEVICE_SERVICE_CLIENTS = DELAY_BETWEEN_OPERATIONS * 10; // 2 sec
+    protected static final long MAXIMUM_TIME_FOR_IOTHUB_PROPAGATION_BETWEEN_DEVICE_SERVICE_CLIENTS = DELAY_BETWEEN_OPERATIONS * 10; // 2 sec
 
     //Max time to wait before timing out test
-    private static final long MAX_MILLISECS_TIMEOUT_KILL_TEST = 120000; // 2 min
+    protected static final long MAX_MILLISECS_TIMEOUT_KILL_TEST = 120000; // 2 min
 
     // Max reported properties to be tested
-    private static final Integer MAX_PROPERTIES_TO_TEST = 5;
+    protected static final Integer MAX_PROPERTIES_TO_TEST = 5;
 
     //Max devices to test
-    private static final Integer MAX_DEVICES = 3;
+    protected static final Integer MAX_DEVICES = 3;
 
     //Default Page Size for Query
-    private static final Integer PAGE_SIZE = 2;
+    protected static final Integer PAGE_SIZE = 2;
 
     protected static String iotHubConnectionString = "";
-    private static final int INTERTEST_GUARDIAN_DELAY_MILLISECONDS = 2000;
+    protected static final int INTERTEST_GUARDIAN_DELAY_MILLISECONDS = 2000;
 
     protected static String publicKeyCert;
     protected static String privateKey;
     protected static String x509Thumbprint;
 
     // Constants used in for Testing
-    private static final String PROPERTY_KEY = "Key";
-    private static final String PROPERTY_KEY_QUERY = "KeyQuery";
-    private static final String PROPERTY_VALUE = "Value";
-    private static final String PROPERTY_VALUE_QUERY = "ValueQuery";
-    private static final String PROPERTY_VALUE_UPDATE = "Update";
-    private static final String PROPERTY_VALUE_UPDATE2 = "Update2";
-    private static final String TAG_KEY = "Tag_Key";
-    private static final String TAG_VALUE = "Tag_Value";
-    private static final String TAG_VALUE_UPDATE = "Tag_Value_Update";
+    protected static final String PROPERTY_KEY = "Key";
+    protected static final String PROPERTY_KEY_QUERY = "KeyQuery";
+    protected static final String PROPERTY_VALUE = "Value";
+    protected static final String PROPERTY_VALUE_QUERY = "ValueQuery";
+    protected static final String PROPERTY_VALUE_UPDATE = "Update";
+    protected static final String PROPERTY_VALUE_UPDATE2 = "Update2";
+    protected static final String TAG_KEY = "Tag_Key";
+    protected static final String TAG_VALUE = "Tag_Value";
+    protected static final String TAG_VALUE_UPDATE = "Tag_Value_Update";
 
     // States of SDK
-    private static RegistryManager registryManager;
-    private static InternalClient internalClient;
-    private static RawTwinQuery scRawTwinQueryClient;
-    private static DeviceTwin sCDeviceTwin;
-    private static DeviceState deviceUnderTest = null;
+    protected static RegistryManager registryManager;
+    protected static InternalClient internalClient;
+    protected static RawTwinQuery scRawTwinQueryClient;
+    protected static DeviceTwin sCDeviceTwin;
+    protected static DeviceState deviceUnderTest = null;
 
-    private static DeviceState[] devicesUnderTest;
+    protected static DeviceState[] devicesUnderTest;
 
-    private DeviceTwinErrorInjectionCommon.DeviceTwinITRunner testInstance;
-    private static final long ERROR_INJECTION_WAIT_TIMEOUT = 1 * 60 * 1000; // 1 minute
-    private static final long ERROR_INJECTION_EXECUTION_TIMEOUT = 2 * 60 * 1000; // 2 minute
+    protected DeviceTwinErrorInjectionCommon.DeviceTwinITRunner testInstance;
+    protected static final long ERROR_INJECTION_WAIT_TIMEOUT = 1 * 60 * 1000; // 1 minute
+    protected static final long ERROR_INJECTION_EXECUTION_TIMEOUT = 2 * 60 * 1000; // 2 minute
 
     //How many milliseconds between retry
-    private static final Integer RETRY_MILLISECONDS = 100;
+    protected static final Integer RETRY_MILLISECONDS = 100;
 
     // How much to wait until a message makes it to the server, in milliseconds
-    private static final Integer SEND_TIMEOUT_MILLISECONDS = 60000;
+    protected static final Integer SEND_TIMEOUT_MILLISECONDS = 60000;
 
-    private enum STATUS
+    protected enum STATUS
     {
         SUCCESS, FAILURE, UNKNOWN
     }
@@ -203,7 +203,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         }
     }
 
-    private void addMultipleDevices(int numberOfDevices) throws IOException, InterruptedException, IotHubException, NoSuchAlgorithmException, URISyntaxException, ModuleClientException
+    protected void addMultipleDevices(int numberOfDevices) throws IOException, InterruptedException, IotHubException, NoSuchAlgorithmException, URISyntaxException, ModuleClientException
     {
         devicesUnderTest = new DeviceState[numberOfDevices];
 
@@ -220,7 +220,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         }
     }
 
-    private void removeMultipleDevices(int numberOfDevices) throws IOException, IotHubException, InterruptedException
+    protected void removeMultipleDevices(int numberOfDevices) throws IOException, IotHubException, InterruptedException
     {
         for (int i = 0; i < numberOfDevices; i++)
         {
@@ -230,7 +230,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         }
     }
 
-    private void setUpTwin(DeviceState deviceState) throws IOException, URISyntaxException, IotHubException, InterruptedException, ModuleClientException
+    protected void setUpTwin(DeviceState deviceState) throws IOException, URISyntaxException, IotHubException, InterruptedException, ModuleClientException
     {
         // set up twin on DeviceClient
         if (internalClient == null)
@@ -299,7 +299,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         }
     }
 
-    private static void tearDownTwin(DeviceState deviceState) throws IOException
+    protected static void tearDownTwin(DeviceState deviceState) throws IOException
     {
         // tear down twin on device client
         if (deviceState.sCDeviceForTwin != null)
@@ -363,12 +363,12 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         this.testInstance = new DeviceTwinErrorInjectionCommon.DeviceTwinITRunner(deviceId, moduleId, protocol, authenticationType, clientType);
     }
 
-    private class DeviceTwinITRunner
+    protected class DeviceTwinITRunner
     {
-        private String deviceId;
-        private IotHubClientProtocol protocol;
-        private AuthenticationType authenticationType;
-        private String moduleId;
+        protected String deviceId;
+        protected IotHubClientProtocol protocol;
+        protected AuthenticationType authenticationType;
+        protected String moduleId;
 
         public DeviceTwinITRunner(String deviceId, String moduleId, IotHubClientProtocol protocol, AuthenticationType authenticationType, String clientType)
         {
@@ -437,7 +437,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         internalClient = null;
     }
 
-    private void readReportedPropertiesAndVerify(DeviceState deviceState, String startsWithKey, String startsWithValue, int expectedReportedPropCount) throws IOException, IotHubException, InterruptedException
+    protected void readReportedPropertiesAndVerify(DeviceState deviceState, String startsWithKey, String startsWithValue, int expectedReportedPropCount) throws IOException, IotHubException, InterruptedException
     {
         int actualCount = 0;
 
@@ -469,7 +469,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         assertEquals(expectedReportedPropCount, actualCount);
     }
 
-    private void waitAndVerifyTwinStatusBecomesSuccess() throws InterruptedException
+    protected void waitAndVerifyTwinStatusBecomesSuccess() throws InterruptedException
     {
         // Check status periodically for success or until timeout
         long startTime = System.currentTimeMillis();
@@ -486,7 +486,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         assertEquals(STATUS.SUCCESS, deviceUnderTest.deviceTwinStatus);
     }
 
-    private void sendReportedPropertiesAndVerify(int numOfProp) throws IOException, IotHubException, InterruptedException {
+    protected void sendReportedPropertiesAndVerify(int numOfProp) throws IOException, IotHubException, InterruptedException {
         // Act
         // send max_prop RP all at once
         deviceUnderTest.dCDeviceForTwin.createNewReportedProperties(numOfProp);
@@ -498,7 +498,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         readReportedPropertiesAndVerify(deviceUnderTest, PROPERTY_KEY, PROPERTY_VALUE, numOfProp);
     }
 
-    void waitAndVerifyDesiredPropertyCallback(String propPrefix, boolean withVersion) throws InterruptedException
+    protected void waitAndVerifyDesiredPropertyCallback(String propPrefix, boolean withVersion) throws InterruptedException
     {
         // Check status periodically for success or until timeout
         long startTime = System.currentTimeMillis();
@@ -524,7 +524,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         }
     }
 
-    private void subscribeToDesiredPropertiesAndVerify(int numOfProp) throws IOException, InterruptedException, IotHubException
+    protected void subscribeToDesiredPropertiesAndVerify(int numOfProp) throws IOException, InterruptedException, IotHubException
     {
         // arrange
         for (int i = 0; i < numOfProp; i++)
@@ -553,589 +553,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         waitAndVerifyDesiredPropertyCallback(PROPERTY_VALUE_UPDATE, false);
     }
 
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromTcpConnectionDrop() throws Exception
-    {
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.tcpConnectionDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromTcpConnectionDrop() throws Exception
-    {
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.tcpConnectionDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromTcpConnectionDrop() throws Exception
-    {
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.tcpConnectionDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsConnectionDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsConnectionDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromAmqpsConnectionDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsConnectionDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsConnectionDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsConnectionDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsSessionDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsSessionDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromAmqpsSessionDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsSessionDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsSessionDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsSessionDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsCBSReqLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.authenticationType != SAS)
-        {
-            //CBS links are only established when using sas authentication
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsCBSReqLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromAmqpsCBSReqLinkrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.authenticationType != SAS)
-        {
-            //CBS links are only established when using sas authentication
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsCBSReqLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsCBSReqLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.authenticationType != SAS)
-        {
-            //CBS links are only established when using sas authentication
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsCBSReqLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsCBSRespLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.authenticationType != SAS)
-        {
-            //CBS links are only established when using sas authentication
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsCBSRespLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromAmqpsCBSRespLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.authenticationType != SAS)
-        {
-            //CBS links are only established when using sas authentication
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsCBSRespLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsCBSRespLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.authenticationType != SAS)
-        {
-            //CBS links are only established when using sas authentication
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsCBSRespLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsD2CLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsD2CTelemetryLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromAmqpsD2CDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsD2CTelemetryLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsD2CLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsD2CTelemetryLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsC2DLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. C2D link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsC2DLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromC2DDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. C2D link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsC2DLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsC2DLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. C2D link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsC2DLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsTwinReqLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Twin Req link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsTwinReqLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromAmqpsTwinReqLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Twin Req link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsTwinReqLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsTwinReqLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Twin Req link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsTwinReqLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsTwinRespLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Twin Resp link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsTwinRespLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromAmqpsTwinRespLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Twin Resp link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsTwinRespLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsTwinRespLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Twin Resp link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsTwinRespLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsMethodReqLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Method Resp link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsMethodReqLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromAmqpsMethodReqLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Method Req link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsMethodReqLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsMethodReqLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Method Req link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsMethodReqLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void sendReportedPropertiesRecoveredFromAmqpsMethodRespLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Method Resp link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSendReportedPropertiesFlow(ErrorInjectionHelper.amqpsMethodRespLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void subscribeToDesiredPropertiesRecoveredFromAmqpsMethodRespLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Method Resp link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionSubscribeToDesiredPropertiesFlow(ErrorInjectionHelper.amqpsMethodRespLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromAmqpsMethodRespLinkDrop() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        if (testInstance.protocol == AMQPS && testInstance.authenticationType == SELF_SIGNED)
-        {
-            //TODO error injection seems to fail under these circumstances. Method Resp link is never dropped even if waiting a long time
-            // Need to talk to service folks about this strange behavior
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsMethodRespLinkDropErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromGracefulShutdownAmqp() throws Exception
-    {
-        if (!(testInstance.protocol == AMQPS || testInstance.protocol == AMQPS_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.amqpsGracefulShutdownErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
-    public void getDeviceTwinRecoveredFromGracefulShutdownMqtt() throws Exception
-    {
-        if (!(testInstance.protocol == MQTT || testInstance.protocol == MQTT_WS))
-        {
-            return;
-        }
-
-        this.errorInjectionGetDeviceTwinFlow(ErrorInjectionHelper.mqttGracefulShutdownErrorInjectionMessage(
-                ErrorInjectionHelper.DefaultDelayInSec,
-                ErrorInjectionHelper.DefaultDurationInSec));
-    }
-
-    private void setDesiredProperties(String queryProperty, String queryPropertyValue, int numberOfDevices) throws IOException, IotHubException
+    protected void setDesiredProperties(String queryProperty, String queryPropertyValue, int numberOfDevices) throws IOException, IotHubException
     {
         for (int i = 0; i < numberOfDevices; i++)
         {
@@ -1148,7 +566,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         }
     }
 
-    private void setConnectionStatusCallBack(final List actualStatusUpdates)
+    protected void setConnectionStatusCallBack(final List actualStatusUpdates)
     {
         IotHubConnectionStatusChangeCallback connectionStatusUpdateCallback = new IotHubConnectionStatusChangeCallback()
         {
@@ -1162,7 +580,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         this.internalClient.registerConnectionStatusChangeCallback(connectionStatusUpdateCallback, null);
     }
 
-    private void errorInjectionSendReportedPropertiesFlow(Message errorInjectionMessage) throws Exception
+    protected void errorInjectionSendReportedPropertiesFlow(Message errorInjectionMessage) throws Exception
     {
         // Arrange
         final List<IotHubConnectionStatus> actualStatusUpdates = new ArrayList<>();
@@ -1189,7 +607,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         readReportedPropertiesAndVerify(deviceUnderTest, PROPERTY_KEY, PROPERTY_VALUE, 2);
     }
 
-    private void errorInjectionSubscribeToDesiredPropertiesFlow(Message errorInjectionMessage) throws Exception
+    protected void errorInjectionSubscribeToDesiredPropertiesFlow(Message errorInjectionMessage) throws Exception
     {
         // Arrange
         final List<IotHubConnectionStatus> actualStatusUpdates = new ArrayList<>();
@@ -1221,7 +639,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         waitAndVerifyDesiredPropertyCallback(PROPERTY_VALUE_UPDATE2, false);
     }
 
-    private void errorInjectionGetDeviceTwinFlow(Message errorInjectionMessage) throws Exception
+    protected void errorInjectionGetDeviceTwinFlow(Message errorInjectionMessage) throws Exception
     {
         // Arrange
         final List<IotHubConnectionStatus> actualStatusUpdates = new ArrayList<>();
@@ -1258,7 +676,7 @@ public class DeviceTwinErrorInjectionCommon extends MethodNameLoggingIntegration
         waitAndVerifyDesiredPropertyCallback(PROPERTY_VALUE_UPDATE, true);
     }
 
-    private void testGetDeviceTwin() throws IOException, InterruptedException, IotHubException
+    protected void testGetDeviceTwin() throws IOException, InterruptedException, IotHubException
     {
         // arrange
         Map<Property, com.microsoft.azure.sdk.iot.device.DeviceTwin.Pair<TwinPropertyCallBack, Object>> desiredPropertiesCB = new HashMap<>();
