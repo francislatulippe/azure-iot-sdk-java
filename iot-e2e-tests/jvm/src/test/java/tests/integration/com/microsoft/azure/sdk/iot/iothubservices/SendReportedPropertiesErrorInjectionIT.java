@@ -8,7 +8,10 @@ package tests.integration.com.microsoft.azure.sdk.iot.iothubservices;
 import com.microsoft.azure.sdk.iot.common.iothubservices.SendReportedPropertiesErrorInjectionCommon;
 import com.microsoft.azure.sdk.iot.device.IotHubClientProtocol;
 import com.microsoft.azure.sdk.iot.service.auth.AuthenticationType;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+@RunWith(Parameterized.class)
 public class SendReportedPropertiesErrorInjectionIT extends SendReportedPropertiesErrorInjectionCommon
 {
     public SendReportedPropertiesErrorInjectionIT(String deviceId, String moduleId, IotHubClientProtocol protocol, AuthenticationType authenticationType, String clientType)
