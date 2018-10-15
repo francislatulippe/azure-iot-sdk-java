@@ -19,11 +19,9 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collection;
 
-@RunWith(Parameterized.class)
 public class DeviceTwinErrorInjectionIT extends DeviceTwinErrorInjectionCommon
 {
     //This function is run before even the @BeforeClass annotation, so it is used as the @BeforeClass method
-    @Parameterized.Parameters(name = "{2} with {3} auth using {4}")
     public static Collection inputsCommons() throws IOException, GeneralSecurityException
     {
         iotHubConnectionString = Tools.retrieveEnvironmentVariableValue(TestConstants.IOT_HUB_CONNECTION_STRING_ENV_VAR_NAME);
