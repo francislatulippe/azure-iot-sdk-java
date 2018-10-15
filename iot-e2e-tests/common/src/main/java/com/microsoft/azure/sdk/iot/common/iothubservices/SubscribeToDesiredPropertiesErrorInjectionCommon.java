@@ -128,7 +128,6 @@ public class SubscribeToDesiredPropertiesErrorInjectionCommon extends DeviceTwin
                 ErrorInjectionHelper.DefaultDurationInSec));
     }
 
-
     @Test(timeout = ERROR_INJECTION_EXECUTION_TIMEOUT)
     public void subscribeToDesiredPropertiesRecoveredFromAmqpsTwinReqLinkDrop() throws Exception
     {

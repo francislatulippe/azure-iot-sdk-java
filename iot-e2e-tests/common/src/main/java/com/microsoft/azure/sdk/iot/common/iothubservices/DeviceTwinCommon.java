@@ -38,62 +38,62 @@ import static org.junit.Assert.*;
 public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
 {
     // Max time to wait to see it on Hub
-    private static final long PERIODIC_WAIT_TIME_FOR_VERIFICATION = 100; // 0.1 sec
-    private static final long MAX_WAIT_TIME_FOR_VERIFICATION = 60000; // 60 sec
-    private static final long DELAY_BETWEEN_OPERATIONS = 200; // 0.2 sec
+    protected static final long PERIODIC_WAIT_TIME_FOR_VERIFICATION = 100; // 0.1 sec
+    protected static final long MAX_WAIT_TIME_FOR_VERIFICATION = 60000; // 60 sec
+    protected static final long DELAY_BETWEEN_OPERATIONS = 200; // 0.2 sec
 
-    private static final long MAXIMUM_TIME_FOR_IOTHUB_PROPAGATION_BETWEEN_DEVICE_SERVICE_CLIENTS = DELAY_BETWEEN_OPERATIONS * 10; // 2 sec
+    protected static final long MAXIMUM_TIME_FOR_IOTHUB_PROPAGATION_BETWEEN_DEVICE_SERVICE_CLIENTS = DELAY_BETWEEN_OPERATIONS * 10; // 2 sec
 
     //Max time to wait before timing out test
-    private static final long MAX_MILLISECS_TIMEOUT_KILL_TEST = 120000; // 2 min
+    protected static final long MAX_MILLISECS_TIMEOUT_KILL_TEST = 120000; // 2 min
 
     // Max reported properties to be tested
-    private static final Integer MAX_PROPERTIES_TO_TEST = 5;
+    protected static final Integer MAX_PROPERTIES_TO_TEST = 5;
 
     //Max devices to test
-    private static final Integer MAX_DEVICES = 3;
+    protected static final Integer MAX_DEVICES = 3;
 
     //Default Page Size for Query
-    private static final Integer PAGE_SIZE = 2;
+    protected static final Integer PAGE_SIZE = 2;
 
     protected static String iotHubConnectionString = "";
-    private static final int INTERTEST_GUARDIAN_DELAY_MILLISECONDS = 2000;
+    protected static final int INTERTEST_GUARDIAN_DELAY_MILLISECONDS = 2000;
 
     protected static String publicKeyCert;
     protected static String privateKey;
     protected static String x509Thumbprint;
 
     // Constants used in for Testing
-    private static final String PROPERTY_KEY = "Key";
-    private static final String PROPERTY_KEY_QUERY = "KeyQuery";
-    private static final String PROPERTY_VALUE = "Value";
-    private static final String PROPERTY_VALUE_QUERY = "ValueQuery";
-    private static final String PROPERTY_VALUE_UPDATE = "Update";
-    private static final String PROPERTY_VALUE_UPDATE2 = "Update2";
-    private static final String TAG_KEY = "Tag_Key";
-    private static final String TAG_VALUE = "Tag_Value";
-    private static final String TAG_VALUE_UPDATE = "Tag_Value_Update";
+    protected static final String PROPERTY_KEY = "Key";
+    protected static final String PROPERTY_KEY_QUERY = "KeyQuery";
+    protected static final String PROPERTY_VALUE = "Value";
+    protected static final String PROPERTY_VALUE_QUERY = "ValueQuery";
+    protected static final String PROPERTY_VALUE_UPDATE = "Update";
+    protected static final String PROPERTY_VALUE_UPDATE2 = "Update2";
+    protected static final String TAG_KEY = "Tag_Key";
+    protected static final String TAG_VALUE = "Tag_Value";
+    protected static final String TAG_VALUE_UPDATE = "Tag_Value_Update";
 
     // States of SDK
-    private static RegistryManager registryManager;
-    private static InternalClient internalClient;
-    private static RawTwinQuery scRawTwinQueryClient;
-    private static DeviceTwin sCDeviceTwin;
-    private static DeviceState deviceUnderTest = null;
+    protected static RegistryManager registryManager;
+    protected static InternalClient internalClient;
+    protected static RawTwinQuery scRawTwinQueryClient;
+    protected static DeviceTwin sCDeviceTwin;
+    protected static DeviceState deviceUnderTest = null;
 
-    private static DeviceState[] devicesUnderTest;
+    protected static DeviceState[] devicesUnderTest;
 
-    private DeviceTwinCommon.DeviceTwinITRunner testInstance;
-    private static final long ERROR_INJECTION_WAIT_TIMEOUT = 1 * 60 * 1000; // 1 minute
-    private static final long ERROR_INJECTION_EXECUTION_TIMEOUT = 2 * 60 * 1000; // 2 minute
+    protected DeviceTwinCommon.DeviceTwinITRunner testInstance;
+    protected static final long ERROR_INJECTION_WAIT_TIMEOUT = 1 * 60 * 1000; // 1 minute
+    protected static final long ERROR_INJECTION_EXECUTION_TIMEOUT = 2 * 60 * 1000; // 2 minute
 
     //How many milliseconds between retry
-    private static final Integer RETRY_MILLISECONDS = 100;
+    protected static final Integer RETRY_MILLISECONDS = 100;
 
     // How much to wait until a message makes it to the server, in milliseconds
-    private static final Integer SEND_TIMEOUT_MILLISECONDS = 60000;
+    protected static final Integer SEND_TIMEOUT_MILLISECONDS = 60000;
 
-    private enum STATUS
+    protected enum STATUS
     {
         SUCCESS, FAILURE, UNKNOWN
     }
@@ -201,7 +201,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         }
     }
 
-    private void addMultipleDevices(int numberOfDevices) throws IOException, InterruptedException, IotHubException, NoSuchAlgorithmException, URISyntaxException, ModuleClientException
+    protected void addMultipleDevices(int numberOfDevices) throws IOException, InterruptedException, IotHubException, NoSuchAlgorithmException, URISyntaxException, ModuleClientException
     {
         devicesUnderTest = new DeviceState[numberOfDevices];
 
@@ -218,7 +218,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         }
     }
 
-    private void removeMultipleDevices(int numberOfDevices) throws IOException, IotHubException, InterruptedException
+    protected void removeMultipleDevices(int numberOfDevices) throws IOException, IotHubException, InterruptedException
     {
         for (int i = 0; i < numberOfDevices; i++)
         {
@@ -228,7 +228,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         }
     }
 
-    private void setUpTwin(DeviceState deviceState) throws IOException, URISyntaxException, IotHubException, InterruptedException, ModuleClientException
+    protected void setUpTwin(DeviceState deviceState) throws IOException, URISyntaxException, IotHubException, InterruptedException, ModuleClientException
     {
         // set up twin on DeviceClient
         if (internalClient == null)
@@ -297,7 +297,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         }
     }
 
-    private static void tearDownTwin(DeviceState deviceState) throws IOException
+    protected static void tearDownTwin(DeviceState deviceState) throws IOException
     {
         // tear down twin on device client
         if (deviceState.sCDeviceForTwin != null)
@@ -361,12 +361,12 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         this.testInstance = new DeviceTwinCommon.DeviceTwinITRunner(deviceId, moduleId, protocol, authenticationType, clientType);
     }
 
-    private class DeviceTwinITRunner
+    protected class DeviceTwinITRunner
     {
-        private String deviceId;
-        private IotHubClientProtocol protocol;
-        private AuthenticationType authenticationType;
-        private String moduleId;
+        protected String deviceId;
+        protected IotHubClientProtocol protocol;
+        protected AuthenticationType authenticationType;
+        protected String moduleId;
 
         public DeviceTwinITRunner(String deviceId, String moduleId, IotHubClientProtocol protocol, AuthenticationType authenticationType, String clientType)
         {
@@ -435,7 +435,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         internalClient = null;
     }
 
-    private void readReportedPropertiesAndVerify(DeviceState deviceState, String startsWithKey, String startsWithValue, int expectedReportedPropCount) throws IOException, IotHubException, InterruptedException
+    protected void readReportedPropertiesAndVerify(DeviceState deviceState, String startsWithKey, String startsWithValue, int expectedReportedPropCount) throws IOException, IotHubException, InterruptedException
     {
         int actualCount = 0;
 
@@ -467,7 +467,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         assertEquals(expectedReportedPropCount, actualCount);
     }
 
-    private void waitAndVerifyTwinStatusBecomesSuccess() throws InterruptedException
+    protected void waitAndVerifyTwinStatusBecomesSuccess() throws InterruptedException
     {
         // Check status periodically for success or until timeout
         long startTime = System.currentTimeMillis();
@@ -484,7 +484,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         assertEquals(STATUS.SUCCESS, deviceUnderTest.deviceTwinStatus);
     }
 
-    private void sendReportedPropertiesAndVerify(int numOfProp) throws IOException, IotHubException, InterruptedException {
+    protected void sendReportedPropertiesAndVerify(int numOfProp) throws IOException, IotHubException, InterruptedException {
         // Act
         // send max_prop RP all at once
         deviceUnderTest.dCDeviceForTwin.createNewReportedProperties(numOfProp);
@@ -676,7 +676,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         }
     }
 
-    private void subscribeToDesiredPropertiesAndVerify(int numOfProp) throws IOException, InterruptedException, IotHubException
+    protected void subscribeToDesiredPropertiesAndVerify(int numOfProp) throws IOException, InterruptedException, IotHubException
     {
         // arrange
         for (int i = 0; i < numOfProp; i++)
@@ -1537,7 +1537,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         sCDeviceTwin.getTwin(deviceUnderTest.sCDeviceForTwin);
     }
 
-    private void setDesiredProperties(String queryProperty, String queryPropertyValue, int numberOfDevices) throws IOException, IotHubException
+    protected void setDesiredProperties(String queryProperty, String queryPropertyValue, int numberOfDevices) throws IOException, IotHubException
     {
         for (int i = 0; i < numberOfDevices; i++)
         {
@@ -1550,7 +1550,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         }
     }
 
-    private void setConnectionStatusCallBack(final List actualStatusUpdates)
+    protected void setConnectionStatusCallBack(final List actualStatusUpdates)
     {
         IotHubConnectionStatusChangeCallback connectionStatusUpdateCallback = new IotHubConnectionStatusChangeCallback()
         {
@@ -1564,7 +1564,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         this.internalClient.registerConnectionStatusChangeCallback(connectionStatusUpdateCallback, null);
     }
 
-    private void errorInjectionSendReportedPropertiesFlow(Message errorInjectionMessage) throws Exception
+    protected void errorInjectionSendReportedPropertiesFlow(Message errorInjectionMessage) throws Exception
     {
         // Arrange
         final List<IotHubConnectionStatus> actualStatusUpdates = new ArrayList<>();
@@ -1591,7 +1591,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         readReportedPropertiesAndVerify(deviceUnderTest, PROPERTY_KEY, PROPERTY_VALUE, 2);
     }
 
-    private void errorInjectionSubscribeToDesiredPropertiesFlow(Message errorInjectionMessage) throws Exception
+    protected void errorInjectionSubscribeToDesiredPropertiesFlow(Message errorInjectionMessage) throws Exception
     {
         // Arrange
         final List<IotHubConnectionStatus> actualStatusUpdates = new ArrayList<>();
@@ -1623,7 +1623,7 @@ public class DeviceTwinCommon extends MethodNameLoggingIntegrationTest
         waitAndVerifyDesiredPropertyCallback(PROPERTY_VALUE_UPDATE2, false);
     }
 
-    private void errorInjectionGetDeviceTwinFlow(Message errorInjectionMessage) throws Exception
+    protected void errorInjectionGetDeviceTwinFlow(Message errorInjectionMessage) throws Exception
     {
         // Arrange
         final List<IotHubConnectionStatus> actualStatusUpdates = new ArrayList<>();

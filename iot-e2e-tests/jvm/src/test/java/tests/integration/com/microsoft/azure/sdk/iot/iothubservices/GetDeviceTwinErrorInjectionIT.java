@@ -27,6 +27,6 @@ public class GetDeviceTwinErrorInjectionIT extends GetDeviceTwinErrorInjectionCo
     @Parameterized.Parameters(name = "{2} with {3} auth using {4}")
     public static Collection inputsCommons() throws IOException, GeneralSecurityException
     {
-        return DeviceTwinIT.inputsCommons();
+        return DeviceTwinErrorInjectionIT.inputsCommons();
     }
 }
