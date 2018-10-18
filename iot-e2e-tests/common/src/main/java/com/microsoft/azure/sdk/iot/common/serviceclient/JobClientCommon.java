@@ -5,6 +5,11 @@
 
 package com.microsoft.azure.sdk.iot.common.serviceclient;
 
+import com.microsoft.azure.sdk.iot.common.helpers.DeviceEmulator;
+import com.microsoft.azure.sdk.iot.common.helpers.DeviceTestManager;
+import com.microsoft.azure.sdk.iot.deps.serializer.JobsResponseParser;
+import com.microsoft.azure.sdk.iot.device.DeviceClient;
+import com.microsoft.azure.sdk.iot.device.IotHubClientProtocol;
 import com.microsoft.azure.sdk.iot.service.Device;
 import com.microsoft.azure.sdk.iot.service.DeviceStatus;
 import com.microsoft.azure.sdk.iot.service.RegistryManager;
@@ -15,13 +20,9 @@ import com.microsoft.azure.sdk.iot.service.jobs.JobResult;
 import com.microsoft.azure.sdk.iot.service.jobs.JobStatus;
 import com.microsoft.azure.sdk.iot.service.jobs.JobType;
 import org.junit.*;
-import com.microsoft.azure.sdk.iot.common.helpers.DeviceEmulator;
-import com.microsoft.azure.sdk.iot.common.helpers.DeviceTestManager;
-import com.microsoft.azure.sdk.iot.common.helpers.Tools;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -30,7 +31,6 @@ import static org.junit.Assert.*;
 /**
  * Integration E2E test for Job Client on the service client.
  */
-@Ignore //ignoring these tests until icm bug 77555728 is resolved
 public class JobClientCommon
 {
     protected static String iotHubConnectionString = "";
@@ -55,7 +55,7 @@ public class JobClientCommon
     private static Device testDevice;
 
     private static final int MAX_NUMBER_JOBS = 3;
-    private static final long MAX_EXECUTION_TIME_IN_MS = 100;
+    private static final long MAX_EXECUTION_TIME_IN_SECONDS = 15;
 
     private JobResult queryDeviceJobResult(String jobId, JobType jobType, JobStatus jobStatus) throws IOException, IotHubException
     {
@@ -67,15 +67,28 @@ public class JobClientCommon
         while(jobClient.hasNextJob(query))
         {
             jobResult = jobClient.getNextJob(query);
-            if(jobResult.getJobId().equals(jobId) &&
-                    (jobResult.getJobType() == jobType) &&
-                    (jobResult.getJobStatus() == jobStatus))
+            if(jobResult.getJobId().equals(jobId))
             {
-                System.out.println("Iothub confirmed " + jobId + " " + jobStatus + " for " + jobType);
-                return jobResult;
+                if (jobResult.getJobType() == jobType)
+                {
+                    if (jobResult.getJobStatus() == jobStatus)
+                    {
+                        //query confirmed that the specified job has the correct type, and status
+                        return jobResult;
+                    }
+                    else
+                    {
+                        throw new AssertionError("queryDeviceJob received job unexpected status. Expected " + jobStatus + " but job ended with status " + jobResult.getJobStatus());
+                    }
+                }
+                else
+                {
+                    throw new AssertionError("queryDeviceJob received job with the wrong job type. Expected " + jobType + " but found " + jobResult.getJobType());
+                }
             }
         }
-        throw new IotHubException("queryDeviceJob do not find the job");
+        
+        throw new AssertionError("queryDeviceJob did not find the job");
     }
 
     private JobResult queryJobResponseResult(String jobId, JobType jobType, JobStatus jobStatus) throws IOException, IotHubException
@@ -93,10 +106,10 @@ public class JobClientCommon
                 return jobResult;
             }
         }
-        throw new IotHubException("queryDeviceJob do not find the job");
+        throw new AssertionError("queryDeviceJob did not find the job");
     }
 
-    //@BeforeClass
+    @BeforeClass
     public static void setUp() throws IOException, IotHubException, InterruptedException, URISyntaxException
     {
         jobClient = JobClient.createFromConnectionString(iotHubConnectionString);
@@ -106,20 +119,45 @@ public class JobClientCommon
         for (int i = 0; i < MAX_DEVICES; i++)
         {
             testDevice = registryManager.addDevice(Device.createFromId(DEVICE_ID_NAME.concat("-" + i + "-" + uuid), DeviceStatus.Enabled, null));
-            devices.add(new DeviceTestManager(null));
+            DeviceTestManager testManager = new DeviceTestManager(new DeviceClient(registryManager.getDeviceConnectionString(testDevice), IotHubClientProtocol.AMQPS));
+            testManager.start();
+            devices.add(testManager);
         }
     }
 
-    //@Before
+    @Before
     public void cleanToStart() throws IOException, IotHubException
     {
         for (DeviceTestManager device:devices)
         {
             device.clearDevice();
         }
+
+        System.out.println("Waiting for all previously scheduled jobs to finish...");
+        Query activeJobsQuery = jobClient.queryDeviceJob("SELECT * FROM devices.jobs");
+        while (activeJobsQuery.hasNext())
+        {
+            JobsResponseParser job = JobsResponseParser.createFromJson(activeJobsQuery.next().toString());
+
+            JobStatus jobStatus = jobClient.getJob(job.getJobId()).getJobStatus();
+            while (jobStatus.equals(JobStatus.enqueued) || jobStatus.equals(JobStatus.queued) || jobStatus.equals(JobStatus.running) || jobStatus.equals(JobStatus.scheduled))
+            {
+                try
+                {
+                    Thread.sleep(500);
+                    jobStatus = jobClient.getJob(job.getJobId()).getJobStatus();
+                }
+                catch (InterruptedException e)
+                {
+                    fail("Unexpected interrupted exception occurred");
+                }
+            }
+        }
+
+        System.out.println("Done waiting for jobs to finish!");
     }
 
-    //@AfterClass
+    @AfterClass
     public static void tearDown() throws Exception
     {
         for (DeviceTestManager device:devices)
@@ -133,7 +171,6 @@ public class JobClientCommon
         }
     }
 
-    @Ignore
     @Test
     public void scheduleUpdateTwinSucceed() throws IOException, IotHubException, InterruptedException
     {
@@ -146,6 +183,7 @@ public class JobClientCommon
         final ConcurrentMap<String, Exception> jobExceptions = new ConcurrentHashMap<>();
         final ConcurrentMap<String, JobResult> jobResults = new ConcurrentHashMap<>();
         final ConcurrentMap<String, Integer> twinExpectedTemperature = new ConcurrentHashMap<>();
+        final ArrayList<String> jobIdsPending = new ArrayList<>();
 
         // Act
         for (int i = 0; i < MAX_NUMBER_JOBS; i++)
@@ -157,6 +195,7 @@ public class JobClientCommon
                 public void run()
                 {
                     String jobId = JOB_ID_NAME + UUID.randomUUID();
+                    jobIdsPending.add(jobId);
                     try
                     {
                         DeviceTwinDevice deviceTwinDevice = new DeviceTwinDevice(deviceId);
@@ -168,7 +207,7 @@ public class JobClientCommon
                         jobClient.scheduleUpdateTwin(
                                 jobId, queryCondition,
                                 deviceTwinDevice,
-                                new Date(), MAX_EXECUTION_TIME_IN_MS);
+                                new Date(), MAX_EXECUTION_TIME_IN_SECONDS);
 
                         JobResult jobResult = jobClient.getJob(jobId);
                         while(jobResult.getJobStatus() != JobStatus.completed)
@@ -183,6 +222,7 @@ public class JobClientCommon
                     {
                         jobExceptions.put(jobId, e);
                     }
+                    jobIdsPending.remove(jobId);
                 }
             });
         }
@@ -192,7 +232,8 @@ public class JobClientCommon
         if (!executor.awaitTermination(TEST_TIMEOUT_MS, TimeUnit.MILLISECONDS))
         {
             executor.shutdownNow();
-            assertTrue("Test finish with timeout", false);
+            String pendingJobIds = getPendingJobIds(jobIdsPending);
+            fail("Test finish with timeout. Pending jobid's were: " + pendingJobIds);
         }
 
         // Assert
@@ -200,6 +241,7 @@ public class JobClientCommon
         assertEquals(0, deviceTestManger.getStatusError());
         ConcurrentMap<String, ConcurrentLinkedQueue<Object>> changes = deviceTestManger.getTwinChanges();
         ConcurrentLinkedQueue<Object> receivedTemperatures = changes.get(STANDARD_PROPERTY_HOMETEMP);
+        assertNotNull(receivedTemperatures);
         assertEquals(MAX_NUMBER_JOBS, receivedTemperatures.size());
 
         // asserts for the service side.
@@ -223,7 +265,6 @@ public class JobClientCommon
         }
     }
 
-    @Ignore
     @Test
     public void scheduleDeviceMethodSucceed() throws IOException, IotHubException, InterruptedException
     {
@@ -237,6 +278,8 @@ public class JobClientCommon
         final ConcurrentMap<String, Exception> jobExceptions = new ConcurrentHashMap<>();
         final ConcurrentMap<String, JobResult> jobResults = new ConcurrentHashMap<>();
 
+        final ArrayList<String> jobIdsPending = new ArrayList<>();
+
         // Act
         for (int i = 0; i < MAX_NUMBER_JOBS; i++)
         {
@@ -246,12 +289,13 @@ public class JobClientCommon
                 public void run()
                 {
                     String jobId = JOB_ID_NAME + UUID.randomUUID();
+                    jobIdsPending.add(jobId);
                     try
                     {
                         jobClient.scheduleDeviceMethod(
                                 jobId, queryCondition,
                                 DeviceEmulator.METHOD_LOOPBACK, RESPONSE_TIMEOUT, CONNECTION_TIMEOUT, PAYLOAD_STRING,
-                                new Date(), MAX_EXECUTION_TIME_IN_MS);
+                                new Date(), MAX_EXECUTION_TIME_IN_SECONDS);
 
                         JobResult jobResult = jobClient.getJob(jobId);
                         while(jobResult.getJobStatus() != JobStatus.completed)
@@ -259,23 +303,36 @@ public class JobClientCommon
                             Thread.sleep(MAXIMUM_TIME_TO_WAIT_FOR_IOTHUB);
                             jobResult = jobClient.getJob(jobId);
                         }
-                        jobResult = queryDeviceJobResult(jobId, JobType.scheduleDeviceMethod, JobStatus.completed);
-                        jobResults.put(jobId, jobResult);
+                        System.out.println("job finished with status " + jobResult.getJobStatus());
+
+                        if (jobResult.getJobStatus().equals(JobStatus.completed))
+                        {
+                            jobResult = queryDeviceJobResult(jobId, JobType.scheduleDeviceMethod, JobStatus.completed);
+                            jobResults.put(jobId, jobResult);
+                        }
+                        else
+                        {
+                            jobExceptions.put(jobId, new Exception("Scheduled job did not finish with status 'completed' but with " + jobResult.getJobStatus()));
+                        }
                     }
                     catch (IotHubException | IOException |InterruptedException e)
                     {
                         jobExceptions.put(jobId, e);
+                        System.out.println("Adding to job exceptions...");
                     }
+                    jobIdsPending.remove(jobId);
                 }
             });
         }
 
         // Cleanup
         executor.shutdown();
+        System.out.println("Waiting for runnables to finish");
         if (!executor.awaitTermination(TEST_TIMEOUT_MS, TimeUnit.MILLISECONDS))
         {
             executor.shutdownNow();
-            assertTrue("Test finish with timeout", false);
+            String pendingJobIds = getPendingJobIds(jobIdsPending);
+            fail("Test finish with timeout. Pending jobid's were: " + pendingJobIds);
         }
 
         // Assert
@@ -302,7 +359,6 @@ public class JobClientCommon
         assertEquals(0, deviceTestManger.getStatusError());
     }
 
-    @Ignore
     @Test
     public void mixScheduleInFutureSucceed() throws IOException, IotHubException, InterruptedException
     {
@@ -318,6 +374,7 @@ public class JobClientCommon
         final ConcurrentMap<String, Exception> jobExceptions = new ConcurrentHashMap<>();
         final ConcurrentMap<String, JobResult> jobResults = new ConcurrentHashMap<>();
         final ConcurrentMap<String, Integer> twinExpectedTemperature = new ConcurrentHashMap<>();
+        final ArrayList<String> jobIdsPending = new ArrayList<>();
 
         // Act
         for (int i = 0; i < MAX_NUMBER_JOBS; i++)
@@ -330,6 +387,7 @@ public class JobClientCommon
                 public void run()
                 {
                     String jobId = JOB_ID_NAME + UUID.randomUUID();
+                    jobIdsPending.add(jobId);
                     try
                     {
                         if(index % 2 == 0)
@@ -337,7 +395,7 @@ public class JobClientCommon
                             jobClient.scheduleDeviceMethod(
                                     jobId, queryCondition,
                                     DeviceEmulator.METHOD_LOOPBACK, RESPONSE_TIMEOUT, CONNECTION_TIMEOUT, PAYLOAD_STRING,
-                                    future, MAX_EXECUTION_TIME_IN_MS);
+                                    future, MAX_EXECUTION_TIME_IN_SECONDS);
                         }
                         else
                         {
@@ -350,7 +408,7 @@ public class JobClientCommon
                             jobClient.scheduleUpdateTwin(
                                     jobId, queryCondition,
                                     deviceTwinDevice,
-                                    new Date(), MAX_EXECUTION_TIME_IN_MS);
+                                    new Date(), MAX_EXECUTION_TIME_IN_SECONDS);
                         }
                         JobResult jobResult = jobClient.getJob(jobId);
                         while(jobResult.getJobStatus() != JobStatus.completed)
@@ -367,6 +425,7 @@ public class JobClientCommon
                     {
                         jobExceptions.put(jobId, e);
                     }
+                    jobIdsPending.remove(jobId);
                 }
             });
         }
@@ -376,7 +435,8 @@ public class JobClientCommon
         if (!executor.awaitTermination(TEST_TIMEOUT_MS, TimeUnit.MILLISECONDS))
         {
             executor.shutdownNow();
-            assertTrue("Test finish with timeout", false);
+            String pendingJobIds = getPendingJobIds(jobIdsPending);
+            assertTrue("Test finish with timeout. Pending jobs were " + pendingJobIds, false);
         }
 
         // wait until device receive the Twin change
@@ -428,7 +488,6 @@ public class JobClientCommon
         assertEquals(0, deviceTestManger.getStatusError());
     }
 
-    @Ignore
     @Test
     public void cancelScheduleDeviceMethodSucceed() throws IOException, IotHubException, InterruptedException
     {
@@ -442,6 +501,7 @@ public class JobClientCommon
         final Date future = new Date(new Date().getTime() + 180000L); // 3 minutes in the future.
 
         final ConcurrentMap<String, Exception> jobExceptions = new ConcurrentHashMap<>();
+        final ArrayList<String> jobIdsPending = new ArrayList<>();
 
         // Act
         for (int i = 0; i < MAX_NUMBER_JOBS; i++)
@@ -453,12 +513,13 @@ public class JobClientCommon
                 public void run()
                 {
                     String jobId = JOB_ID_NAME + UUID.randomUUID();
+                    jobIdsPending.add(jobId);
                     try
                     {
                         jobClient.scheduleDeviceMethod(
                                 jobId, queryCondition,
                                 DeviceEmulator.METHOD_LOOPBACK, RESPONSE_TIMEOUT, CONNECTION_TIMEOUT, PAYLOAD_STRING,
-                                (index % 2 == 0)?future:new Date(), MAX_EXECUTION_TIME_IN_MS);
+                                (index % 2 == 0)?future:new Date(), MAX_EXECUTION_TIME_IN_SECONDS);
 
                         JobStatus expectedJobStatus = JobStatus.completed;
                         if(index % 2 == 0)
@@ -480,6 +541,7 @@ public class JobClientCommon
                     {
                         jobExceptions.put(jobId, e);
                     }
+                    jobIdsPending.remove(jobId);
                 }
             });
         }
@@ -489,7 +551,8 @@ public class JobClientCommon
         if (!executor.awaitTermination(TEST_TIMEOUT_MS, TimeUnit.MILLISECONDS))
         {
             executor.shutdownNow();
-            assertTrue("Test finish with timeout", false);
+            String pendingJobIds = getPendingJobIds(jobIdsPending);
+            assertTrue("Test finish with timeout. Pending jobs were " + pendingJobIds, false);
         }
 
         // Assert
@@ -505,5 +568,15 @@ public class JobClientCommon
 
         // asserts for the client side.
         assertEquals(0, deviceTestManger.getStatusError());
+    }
+
+    private String getPendingJobIds(List<String> jobIdsPending)
+    {
+        StringBuilder pendingJobIds = new StringBuilder();
+        for (String jobId : jobIdsPending)
+        {
+            pendingJobIds.append(jobId + " ");
+        }
+        return pendingJobIds.toString();
     }
 }
